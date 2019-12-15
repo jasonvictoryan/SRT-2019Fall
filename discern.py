@@ -16,6 +16,9 @@ def discern(img):
  
  
 cap = cv2.VideoCapture(0)
+cap.set(3,1280) #set camera resolution
+cap.set(4,720)
+
 while (1):
     ret, img = cap.read()
     # cv2.imshow("Image", img)
