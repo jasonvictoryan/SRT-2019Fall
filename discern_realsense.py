@@ -4,13 +4,22 @@ import numpy as np
 import matplotlib.pyplot as plt
 from decimal import Decimal
 
-def Remove_outliers(Depth):
+def Remove_outliers(Depth,scale):
 	AllNums=[]
 	for i in range(len(Depth)):
 		for j in range(len(Depth[i])):
+			if (Depth[i][j] * scale<0.1):
+				continue;
 			AllNums.append(Depth[i][j])
+	
 	AllNums.sort()
-	return np.array(AllNums[int(0.4*len(AllNums)):int(0.6*len(AllNums))])
+	last=0
+	for i in range(len(AllNums)):
+		if (AllNums[i]>=2 * AllNums[0]):
+			break
+		else:
+			last=i;
+	return np.array(AllNums[0:last+1])
 
 def discern(img,depth_img,aligned_depth_frame):
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -29,10 +38,11 @@ def discern(img,depth_img,aligned_depth_frame):
             depth = np.asanyarray(aligned_depth_frame.get_data())
             depth = depth[x:x+h,y:y+w].astype(float)
 			
-			# Remove_outliers
-            Processed_depth=Remove_outliers(depth)
-			
             depth_scale = profile.get_device().first_depth_sensor().get_depth_scale()
+			
+			# Remove_outliers
+            Processed_depth=Remove_outliers(depth,depth_scale)
+			
             Processed_depth = Processed_depth * depth_scale
 			
             dist, _, _, _ = cv2.mean(Processed_depth)
@@ -93,3 +103,4 @@ finally:
     # Stop streaming
     pipeline.stop()
     cv2.destroyAllWindows()
+    f.close();
